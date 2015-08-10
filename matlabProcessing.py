@@ -6,12 +6,14 @@ import xlrd, xlwt, numpy
 
 ############################## Create Cell class ##############################
 class Cell:
-    def __init__(self,peakData,cellNo,experimentNo):
+    def __init__(self,peakData,cellNo,experimentNo,groupNo,date):
         self.peakData = peakData
         # peakData = [peakNo,time,height,width,relHeight]
         self.numPeaks = len(peakData)
         self.cellNo = cellNo        
         self.experimentNo = experimentNo
+        self.groupNo = groupNo
+        self.date = date
         
         heightTreatment = []
         widthTreatment = []
@@ -44,6 +46,9 @@ class Cell:
                 heightIonomycin.append(peakData[peakNo][2])
                 widthIonomycin.append(peakData[peakNo][3])
                 relheightIonomycin.append(peakData[peakNo][4])
+        self.heightTreatment = heightTreatment
+        self.widthTreatment = widthTreatment
+        self.relheightTreatment = relheightTreatment
         self.avgHeight = numpy.mean(heightTreatment)
         self.stdHeight = numpy.std(heightTreatment)
         self.avgWidth = numpy.mean(widthTreatment)
@@ -196,12 +201,50 @@ for sheetNo in range(0,numSheets): # For each sheet...
             elif expNo in (97,98,99,100,101):
                 groupNo = 18
                 date = '2015-04-15'
-            newCell = Cell(cellData,cellNo,expNo)
-            dataStruct.append(newCell)
+            dataStruct.append(Cell(cellData,cellNo,expNo,groupNo,date))
             cellData = [] # Reinitialize the cellData variable...
             cellNo += 1
         # Append that row to the list of previously stored rows in cellData
         cellData.append(worksheet.row_values(rowNo))
+
+#%%
+########################### Create Experiment class ###########################
+class Experiment:
+    def __init__(self,groupNo,numCells,avgHeight,stdHeight,avgWidth,stdWidth,avgRelheight,stdRelheight):
+        self.groupNo = groupNo
+        self.numCells = numCells
+        self.avgHeight = avgHeight
+        self.stdHeight = stdHeight
+        self.avgWidth = avgWidth
+        self.stdWidth = stdWidth
+        self.avgRelheight = avgRelheight
+        self.stdRelheight = stdRelheight
+###############################################################################
+
+heightALLnew = []
+widthALLnew = []
+relheightALLnew = []
+allExperiments = []
+for group in range(1,19):
+    heightALL = [Cell.heightTreatment for Cell in dataStruct if Cell.groupNo == group]
+    for item in range(len(heightALL)):
+        heightALLnew = heightALLnew + heightALL[item]
+    avgHeight = numpy.mean(heightALLnew)
+    stdHeight = numpy.std(heightALLnew)    
+    
+    widthALL = [Cell.widthTreatment for Cell in dataStruct if Cell.groupNo == group]
+    for item in range(len(widthALL)):
+        widthALLnew = widthALLnew + widthALL[item]
+    avgWidth = numpy.mean(widthALLnew)        
+    stdWidth = numpy.std(widthALLnew)
+        
+    relheightALL = [Cell.relheightTreatment for Cell in dataStruct if Cell.groupNo == group]
+    for item in range(len(relheightALL)):
+        relheightALLnew = relheightALLnew + relheightALL[item]
+    avgRelheight = numpy.mean(relheightALLnew)
+    stdRelheight = numpy.std(relheightALLnew)
+    
+    allExperiments.append(Experiment(group,len(heightALL),avgHeight,stdHeight,avgWidth,stdWidth,avgRelheight,stdRelheight))
 
 #for rowNo in range(len(cellData)):
 #    for colNo in range(len(cellData[rowNo])):
