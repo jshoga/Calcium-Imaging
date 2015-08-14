@@ -23,21 +23,23 @@ class Cell:
         heightIonomycin = []
         widthIonomycin = []
         relheightIonomycin = []
+        timeOfTreatment = 60 # seconds
+        timeOfIonomycin = 540 # seconds
         for peakNo in range(len(peakData)):
             time = peakData[peakNo][1] # peak time in seconds
-            if time < 510 and time >= 60:
+            if time < timeOfIonomycin and time >= timeOfTreatment:
                 # Peaks that occur between 60 and 510 seconds are caused by the
                 # group-specific treatment. These are the peaks of interest.
                 heightTreatment.append(peakData[peakNo][2])
                 widthTreatment.append(peakData[peakNo][3])
                 relheightTreatment.append(peakData[peakNo][4])
-            elif time < 60:
+            elif time < timeOfTreatment:
                 # Peaks that occur before 60 seconds are spontaneous and due to
                 # indeterminate causes
                 heightSpontaneous.append(peakData[peakNo][2])
                 widthSpontaneous.append(peakData[peakNo][3])
                 relheightSpontaneous.append(peakData[peakNo][4])
-            elif time > 555:
+            elif time >= timeOfIonomycin:
                 # Peaks that occur after 555 seconds are caused by the addition
                 # of ionomycin. If such peaks occur, the cell is considered
                 # to be capable of calcium signaling regardless of the response
@@ -64,9 +66,21 @@ class Cell:
             self.spontaneous = True
         if not heightTreatment:
             self.effectiveTreatment = False
+            self.timeToResponse = 'N/A'
         else:
             self.effectiveTreatment = True
+            for peakNo in range(len(peakData)):
+                time = peakData[peakNo][1]
+                if time > 60:
+                    self.timeToResponse = time
+                    break
         self.numPeaks = len(heightTreatment)
+        for peakNo in range(len(peakData)):
+            time = peakData[peakNo][1]
+            if time >= timeOfTreatment and time < timeOfIonomycin:
+        ####################################################################
+        # ----> ## WRITE CODE HERE TO DETERMINE PEAK TO PEAK TIME ## <---- #
+        ####################################################################
         if groupNo == 1:
             self.treatment = 'Hypotonic Stress'
         elif groupNo == 2:
