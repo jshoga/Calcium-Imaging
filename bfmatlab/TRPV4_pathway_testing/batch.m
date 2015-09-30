@@ -6,7 +6,6 @@ folder = 'R:\Dropbox\PriceLab_Resources\Projects\Optogenetics\CalciumImaging';
 foldersInFolder = dir(folder);
 foldersOfInterest = foldersInFolder(3:end-8);
 
-exp = cell(105,1);
 for f = 1:length(foldersOfInterest)
     folderPath = [folder,'\',foldersOfInterest(f).name];
     sampleFolders = dir(folderPath);
@@ -52,25 +51,47 @@ clear; clc;
 cellsFolderPath = ...
     'R:\Dropbox\PriceLab_Resources\Projects\Optogenetics\CalciumImaging\Cells';
 
-wksHeader1 = {'','',...
+wksHeader1 = {'','','',...
     'Spontaneous','','','','','','','','','','',...
     'Treatment','','','','','','','','','','',...
     'Ionomycin','','','','','','','','','',''};
-wksHeader2 = {'','',...
+wksHeader2 = {'','','',...
     'Num. Peaks','Height','','Prominence','','Width','','Rise','','Fall','',...
     'Num. Peaks','Height','','Prominence','','Width','','Rise','','Fall','',...
     'Num. Peaks','Height','','Prominence','','Width','','Rise','','Fall',''};
-wksHeader3 = {'Experiment No.','Cell No.',...
+wksHeader3 = {'Group No.','Experiment No.','Cell No.',...
     '','AVG','STD','AVG','STD','AVG','STD','AVG','STD','AVG','STD',...
     '','AVG','STD','AVG','STD','AVG','STD','AVG','STD','AVG','STD',...
     '','AVG','STD','AVG','STD','AVG','STD','AVG','STD','AVG','STD'};
 wksHeaderFinal = cat(1,wksHeader1,wksHeader2,wksHeader3);
 
+numPeaksSpontGroup = cell(18,1);
+heightSpontGroup = cell(18,1);
+promSpontGroup = cell(18,1);
+widthSpontGroup = cell(18,1);
+riseSpontGroup = cell(18,1);
+fallSpontGroup = cell(18,1);
+
+numPeaksTreatGroup = cell(18,1);
+heightTreatGroup = cell(18,1);
+promTreatGroup = cell(18,1);
+widthTreatGroup = cell(18,1);
+riseTreatGroup = cell(18,1);
+fallTreatGroup = cell(18,1);
+
+numPeaksIonoGroup = cell(18,1);
+heightIonoGroup = cell(18,1);
+promIonoGroup = cell(18,1);
+widthIonoGroup = cell(18,1);
+riseIonoGroup = cell(18,1);
+fallIonoGroup = cell(18,1);
+
 count = 1;
-cellInfo = cell(1);
-expObjectPath = 'R:\Dropbox\PriceLab_Resources\Projects\Optogenetics\CalciumImaging\Experiments';
-for e = 1:l05
-    expWorkspacePath = [expFolderPath,'\Experiment_',sprintf('%03d',e)];
+cellInfo = cell(1,36);
+expObjectPath = ...
+    'R:\Dropbox\PriceLab_Resources\Projects\Optogenetics\CalciumImaging\Experiments';
+for e = 1:105
+    expWorkspacePath = [expObjectPath,'\Experiment_',sprintf('%03d',e)];
     load(expWorkspacePath)
     groupNo = exp.groupNo;
     expFolderPath = [cellsFolderPath,'\ExpNo',sprintf('%03d',e)];
@@ -78,6 +99,7 @@ for e = 1:l05
     for c = 1:numCells
         cellPath = [expFolderPath,'\CellNo',sprintf('%02d',c)];
         load(cellPath)
+        
         numPeaksSpont = length(cells.spontaneousPeaks);
         avgHeightSpont = mean(cells.peakHeight(cells.spontaneousPeaks));
         stdHeightSpont = std(cells.peakHeight(cells.spontaneousPeaks));
@@ -124,5 +146,106 @@ for e = 1:l05
             numPeaksIono,avgHeightIono,stdHeightIono,...
             avgPromIono,stdPromIono,avgWidthIono,stdWidthIono,...
             avgRiseIono,stdRiseIono,avgFallIono,stdFallIono};
+        count = count + 1;
+        
+        %% Group analysis
+        g = groupNo;
+        numPeaksSpontGroup{g} = ...
+            [numPeaksSpontGroup{g},length(cells.spontaneousPeaks)];
+        heightSpontGroup{g} = ...
+            [heightSpontGroup{g},cells.peakHeight(cells.spontaneousPeaks)'];
+        promSpontGroup{g} = ...
+            [promSpontGroup{g},cells.peakProm(cells.spontaneousPeaks)'];
+        widthSpontGroup{g} = ...
+            [widthSpontGroup{g},cells.peakWidth(cells.spontaneousPeaks)'];
+        riseSpontGroup{g} = ...
+            [riseSpontGroup{g},cells.peakRise(cells.spontaneousPeaks)];
+        fallSpontGroup{g} = ...
+            [fallSpontGroup{g},cells.peakFall(cells.spontaneousPeaks)];
+
+        numPeaksTreatGroup{g} = ...
+            [numPeaksTreatGroup{g},length(cells.treatmentPeaks)];
+        heightTreatGroup{g} = ...
+            [heightTreatGroup{g},cells.peakHeight(cells.treatmentPeaks)'];
+        promTreatGroup{g} = ...
+            [promTreatGroup{g},cells.peakProm(cells.treatmentPeaks)'];
+        widthTreatGroup{g} = ...
+            [widthTreatGroup{g},cells.peakWidth(cells.treatmentPeaks)'];
+        riseTreatGroup{g} = ...
+            [riseTreatGroup{g},cells.peakRise(cells.treatmentPeaks)];
+        fallTreatGroup{g} = ...
+            [fallTreatGroup{g},cells.peakFall(cells.treatmentPeaks)];
+
+        numPeaksIonoGroup{g} = ...
+            [numPeaksIonoGroup{g},length(cells.ionomycinPeaks)];
+        heightIonoGroup{g} = ...
+            [heightIonoGroup{g},cells.peakHeight(cells.ionomycinPeaks)'];
+        promIonoGroup{g} = ...
+            [promIonoGroup{g},cells.peakProm(cells.ionomycinPeaks)'];
+        widthIonoGroup{g} = ...
+            [widthIonoGroup{g},cells.peakWidth(cells.ionomycinPeaks)'];
+        riseIonoGroup{g} = ...
+            [riseIonoGroup{g},cells.peakRise(cells.ionomycinPeaks)];
+        fallIonoGroup{g} = ...
+            [fallIonoGroup{g},cells.peakFall(cells.ionomycinPeaks)];
     end
 end
+%%
+groupInfo = cell(18,35);
+for g = 1:18        % 18 groups total
+    avgNumPeaksSpontGroup = mean(numPeaksSpontGroup{g});
+    stdNumPeaksSpontGroup = std(numPeaksSpontGroup{g});
+    avgHeightSpontGroup = mean(heightSpontGroup{g});
+    stdHeightSpontGroup = std(heightSpontGroup{g});
+    avgPromSpontGroup = mean(promSpontGroup{g});
+    stdPromSpontGroup = std(promSpontGroup{g});
+    avgWidthSpontGroup = mean(widthSpontGroup{g});
+    stdWidthSpontGroup = std(widthSpontGroup{g});
+    avgRiseSpontGroup = mean(riseSpontGroup{g});
+    stdRiseSpontGroup = std(riseSpontGroup{g});
+    avgFallSpontGroup = mean(fallSpontGroup{g});
+    stdFallSpontGroup = std(fallSpontGroup{g});
+
+    avgNumPeaksTreatGroup = mean(numPeaksTreatGroup{g});
+    stdNumPeaksTreatGroup = std(numPeaksTreatGroup{g});
+    avgHeightTreatGroup = mean(heightTreatGroup{g});
+    stdHeightTreatGroup = std(heightTreatGroup{g});
+    avgPromTreatGroup = mean(promTreatGroup{g});
+    stdPromTreatGroup = std(promTreatGroup{g});
+    avgWidthTreatGroup = mean(widthTreatGroup{g});
+    stdWidthTreatGroup = std(widthTreatGroup{g});
+    avgRiseTreatGroup = mean(riseTreatGroup{g});
+    stdRiseTreatGroup = std(riseTreatGroup{g});
+    avgFallTreatGroup = mean(fallTreatGroup{g});
+    stdFallTreatGroup = std(fallTreatGroup{g});
+    
+    avgNumPeaksIonoGroup = mean(numPeaksIonoGroup{g});
+    stdNumPeaksIonoGroup = std(numPeaksIonoGroup{g});
+    avgHeightIonoGroup = mean(heightIonoGroup{g});
+    stdHeightIonoGroup = std(heightIonoGroup{g});
+    avgPromIonoGroup = mean(promIonoGroup{g});
+    stdPromIonoGroup = std(promIonoGroup{g});
+    avgWidthIonoGroup = mean(widthIonoGroup{g});
+    stdWidthIonoGroup = std(widthIonoGroup{g});
+    avgRiseIonoGroup = mean(riseIonoGroup{g});
+    stdRiseIonoGroup = std(riseIonoGroup{g});
+    avgFallIonoGroup = mean(fallIonoGroup{g});
+    stdFallIonoGroup = std(fallIonoGroup{g});
+    
+    groupInfo(g,:) = {g,...
+            avgNumPeaksSpontGroup,stdNumPeaksSpontGroup, ...
+            avgHeightSpontGroup,stdHeightSpontGroup,avgPromSpontGroup,...
+            stdPromSpontGroup,avgWidthSpontGroup,stdWidthSpontGroup,...
+            avgRiseSpontGroup,stdRiseSpontGroup,avgFallSpontGroup,...
+            stdFallSpontGroup,avgNumPeaksTreatGroup,...
+            stdNumPeaksTreatGroup,avgHeightTreatGroup,...
+            stdHeightTreatGroup,avgPromTreatGroup,stdPromTreatGroup,...
+            avgWidthTreatGroup,stdWidthTreatGroup,avgRiseTreatGroup,...
+            stdRiseTreatGroup,avgFallTreatGroup,stdFallTreatGroup,...
+            avgNumPeaksIonoGroup,stdNumPeaksIonoGroup,avgHeightIonoGroup,...
+            stdHeightIonoGroup,avgPromIonoGroup,stdPromIonoGroup,...
+            avgWidthIonoGroup,stdWidthIonoGroup,avgRiseIonoGroup,...
+            stdRiseIonoGroup,avgFallIonoGroup,stdFallIonoGroup};
+end
+    
+save('data.mat','cellInfo','groupInfo')
