@@ -115,21 +115,39 @@ classdef Experiment
                 end
             else
                 obj.dye = 'Rhod-2';
-                if obj.expNo == 1 || obj.expNo == 2 || obj.expNo == 3
-                    obj.treatment = '0 s - non-transfected';
-                    obj.groupNo = 8;
-                elseif obj.expNo == 4 || obj.expNo == 5 || obj.expNo == 6
-                    obj.treatment = '60 s - non-transfected';
-                    obj.groupNo = 9;
+                if obj.expNo == 13 || obj.expNo == 14 || obj.expNo == 15
+                    obj.treatment = '1 s';
+                    obj.groupNo = 1;
                 elseif obj.expNo == 7 || obj.expNo == 8 || obj.expNo == 9
                     obj.treatment = '5 s';
                     obj.groupNo = 2;
                 elseif obj.expNo == 10 || obj.expNo == 11 || obj.expNo == 12
                     obj.treatment = '10 s';
                     obj.groupNo = 3;
-                elseif obj.expNo == 13 || obj.expNo == 14 || obj.expNo == 15
-                    obj.treatment = '1 s';
-                    obj.groupNo = 1;
+                elseif obj.expNo == 32 || obj.expNo == 33
+                    obj.treatment = '20 s';
+                    obj.groupNo = 4;
+                elseif obj.expNo == 20 || obj.expNo == 24 || obj.expNo == 25 || obj.expNo == 26 || obj.expNo == 30 || obj.expNo == 31
+                    obj.treatment = '40 s';
+                    obj.groupNo = 5;
+                elseif obj.expNo == 16 || obj.expNo == 17 || obj.expNo == 18 || obj.expNo == 19
+                    obj.treatment = '60 s';
+                    obj.groupNo = 6;
+%                 elseif obj.expNo == 
+%                     obj.treatment = '0 s';
+%                     obj.groupNo = 7;
+                elseif obj.expNo == 1 || obj.expNo == 2 || obj.expNo == 3
+                    obj.treatment = '0 s - non-transfected';
+                    obj.groupNo = 8;
+                elseif obj.expNo == 4 || obj.expNo == 5 || obj.expNo == 6
+                    obj.treatment = '60 s - non-transfected';
+                    obj.groupNo = 9;
+                elseif obj.expNo == 34 || obj.expNo == 35
+                    obj.treatment = '20 s + GSK205';
+                    obj.groupNo = 10;
+%                 elseif obj.expNo == 
+%                     obj.treatment = '20 s + Xestospongin C';
+%                     obj.groupNo = 11;
                 end
             end
         end
