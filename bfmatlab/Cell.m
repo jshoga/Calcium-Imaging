@@ -12,6 +12,7 @@ classdef Cell
         treatmentPeaks      % peaks that occur after treatment
         intensity   % vector of intensity values
         isActive    % boolean 1 if cell responds to treatment, else 0
+        intensityFilt
     end
     methods
         function obj = Cell(images,mask,cellNumber)
@@ -63,6 +64,7 @@ classdef Cell
             end
             obj.numPeaks = length(obj.treatmentPeaks);
             obj.intensity = intensityAvg;
+            obj.intensityFilt = intensityAvgSmoothe;
         end
     end
 end

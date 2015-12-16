@@ -1,4 +1,4 @@
-classdef Experiment
+classdef Experiment < handle
     properties
         date
         expNo
@@ -10,48 +10,69 @@ classdef Experiment
         cells
         images
     end
-    methods
+    methods    
         function obj = Experiment(expFolder,images,mask)
-            if nargin == 1
-                prePath = [expFolder,'\PreExposure.czi'];
-                postPath = [expFolder,'\PostExposure.czi'];
+            if nargin == 0
+                expFolder = uigetdir;
+            end
+            if nargin == 0 || nargin == 1
+                dateIdx = regexp(expFolder,'2015');
+                obj.date = expFolder(dateIdx:dateIdx+9);
+                
+                % Matlab must have a better way of handling dates
+                if strcmp(obj.date,'2015-09-29') || ...
+                    strcmp(obj.date,'2015-09-30') || ...
+                    strcmp(obj.date,'2015-10-01') || ...
+                    strcmp(obj.date,'2015-10-08') || ...
+                    strcmp(obj.date,'2015-10-14') || ...
+                    strcmp(obj.date,'2015-10-15') || ...
+                    strcmp(obj.date,'2015-10-16') || ...
+                    strcmp(obj.date,'2015-10-22') || ...
+                    strcmp(obj.date,'2015-10-23') || ...
+                    strcmp(obj.date,'2015-10-28') || ...
+                    strcmp(obj.date,'2015-10-30') || ...
+                    strcmp(obj.date,'2015-11-05') || ...
+                    strcmp(obj.date,'2015-11-06') || ...
+                    strcmp(obj.date,'2015-11-11') || ...
+                    strcmp(obj.date,'2015-11-12') || ...
+                    strcmp(obj.date,'2015-11-13') || ...
+                    strcmp(obj.date,'2015-11-18')
+                        prePath = [expFolder,'\PreExposure.czi'];
+                        postPath = [expFolder,'\PostExposure.czi'];
 
-                pre = bfopen(prePath);
-                post = bfopen(postPath);
+                        pre = bfopen(prePath);
+                        post = bfopen(postPath);
 
-                preImages = pre{1}(:,1);
-                postImages = post{1}(:,1);
-                regSequence = [preImages;postImages];
+                        preImages = pre{1}(:,1);
+                        postImages = post{1}(:,1);
+                        regSequence = [preImages;postImages];
+                else
+                    path = [expFolder,'\Experiment.czi'];
+                    czi = bfopen(path);
+                    regSequence = czi{1}(:,1);
+                end
                 %% Read in images then trace cells in first image
                 % First image in experiment
                 firstImage = regSequence{1};
                 % Initialize mask to be same size as images in experiment
                 fullMask = zeros(size(firstImage));
-                % Optimizes contrast and shows image.
-                imshow(imadjust(firstImage))
+%                 % Optimizes contrast and shows image.
+%                 imshow(imadjust(firstImage))
                 % Convert grayscale image to binary image
-                bw = im2bw(imadjust(firstImage));
                 % Filters the traced polygons such that traced regions
                 % containing the number of pixels between the pixel range
                 % provided are kept, and objects outside of the provided range 
                 % are excluded.
-                bw2 = bwareafilt(bw,[100,1000]);
+                bw2 = bwareafilt(im2bw(imadjust(firstImage)),[100,1000]);
                 % This is the trace program, goes east to begin searching for 
                 % adjacent pixels and continues counterclockwise. Inf tells the
                 % function to for an unlimited amount of pixels until it 
                 % returns to the beginning.
-                hold on
                 % Fill in cells so that there are no cells in cells
-                BW_filled = imfill(bw2,'holes');
                 % Store all of the traced cells in variable 'boundaries'
-                boundaries = bwboundaries(BW_filled);
-                for k = 1:length(boundaries)
-                    cellNo = boundaries{k};
-                    % Plot all traced cells
-                    plot(cellNo(:,2),cellNo(:,1),'g','LineWidth',1.5);
-                end
-                [l,w] = size(firstImage);   % WHAT ARE THISSSS????!!
-                for z=1:length(boundaries)
+                boundaries = bwboundaries(imfill(bw2,'holes'));
+                [l,w] = size(firstImage);
+                for z = 1:length(boundaries)
                     % Store all pixel x coordinates
                     bx = boundaries{z}(:,2);
                     % Store all pixel y coordinates
@@ -61,24 +82,11 @@ classdef Experiment
                     % Add current mask into a total mask
                     fullMask = fullMask + bw3;
                 end
-%                 % Allow the user to circle additional cells if required
-%                 DrawROIcheck = ...
-%                     questdlg('Would you like to circle another cell?', ...
-%                     'Checking...','Yes','No','Yes');
-%                 cnt = 1;
-%                 while strcmp(DrawROIcheck,'Yes') == 1
-%                     h = imfreehand;
-%                     bw = createMask(h);
-%                     DrawROIcheck = ...
-%                         questdlg('Would you like to circle another cell?',...
-%                         'Checking...','Yes','No','Yes');
-%                     fullMask = fullMask + bw;
-%                     cnt = cnt + 1;
-%                 end
-                close all
-            else
+            elseif nargin == 3
                 regSequence = images;
                 fullMask = mask;
+            else
+                error('Error: You need either 0, 1, or 3 inputs')
             end
 
             % Find connected components (objects, i.e. cells) in mask
@@ -88,8 +96,6 @@ classdef Experiment
                 cc.PixelIdxList(cellfun('length',cc.PixelIdxList)>10);
             obj.mask = fullMask;
             obj.numCells = length(obj.cells);
-            dateIdx = regexp(expFolder,'2015');
-            obj.date = expFolder(dateIdx:dateIdx+9);
             obj.images = regSequence;
             obj.expNo = str2double(expFolder(end-1:end));
             
@@ -113,7 +119,20 @@ classdef Experiment
                     obj.treatment = '1 s';
                     obj.groupNo = 1;
                 end
-            else
+            elseif strcmp(obj.date,'2015-10-08') || ...
+                    strcmp(obj.date,'2015-10-14') || ...
+                    strcmp(obj.date,'2015-10-15') || ...
+                    strcmp(obj.date,'2015-10-16') || ...
+                    strcmp(obj.date,'2015-10-22') || ...
+                    strcmp(obj.date,'2015-10-23') || ...
+                    strcmp(obj.date,'2015-10-28') || ...
+                    strcmp(obj.date,'2015-10-30') || ...
+                    strcmp(obj.date,'2015-11-05') || ...
+                    strcmp(obj.date,'2015-11-06') || ...
+                    strcmp(obj.date,'2015-11-11') || ...
+                    strcmp(obj.date,'2015-11-12') || ...
+                    strcmp(obj.date,'2015-11-13') || ...
+                    strcmp(obj.date,'2015-11-18')
                 obj.dye = 'Rhod-2';
                 if obj.expNo == 13 || obj.expNo == 14 || obj.expNo == 15
                     obj.treatment = '1 s';
@@ -152,7 +171,52 @@ classdef Experiment
                     obj.treatment = 'unknown';
                     obj.groupNo = 12;
                 end
+            else
+                obj.dye = 'Cal-590 or Rhod-4';
+                obj.treatment = '?';
+                obj.groupNo = '?';
             end
+        end
+        function AddObjects(obj)
+            oldMask = obj.mask;
+            newMask = zeros(size(oldMask));
+            boundaries = bwboundaries(oldMask);
+            
+            [l,w] = size(oldMask);
+            for z = 1:length(boundaries)
+                % Store all pixel x coordinates
+                bx = boundaries{z}(:,2);
+                % Store all pixel y coordinates
+                by = boundaries{z}(:,1);
+                % Convert traced shape into a mask
+                bw3 = poly2mask(bx,by,l,w);
+                % Add current mask into a total mask
+                newMask = newMask + bw3;
+            end
+            
+            hiContrastImg = imadjust(obj.images{1});
+            imshow(hiContrastImg)
+            hold on
+            for k = 1:length(boundaries)
+                cellNo = boundaries{k};
+                % Plot all traced cells
+                plot(cellNo(:,2),cellNo(:,1),'g','LineWidth',1.5);
+            end
+            % Allow the user to circle additional cells if required
+            DrawROIcheck = ...
+                questdlg('Would you like to circle another cell?', ...
+                'Checking...','Yes','No','Yes');
+            cnt = 1;
+            while strcmp(DrawROIcheck,'Yes') == 1
+                h = imfreehand;
+                bw = createMask(h);
+                DrawROIcheck = ...
+                    questdlg('Would you like to circle another cell?',...
+                    'Checking...','Yes','No','Yes');
+                newMask = newMask + bw;
+                cnt = cnt + 1;
+            end
+            obj.mask = newMask;
         end
     end
 end
