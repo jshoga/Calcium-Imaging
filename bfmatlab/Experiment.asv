@@ -63,7 +63,8 @@ classdef Experiment < handle
                 % containing the number of pixels between the pixel range
                 % provided are kept, and objects outside of the provided range 
                 % are excluded.
-                bw2 = bwareafilt(im2bw(imadjust(firstImage)),[100,1000]);
+                level = graythresh(imadjust(firstImage));
+                bw2 = bwareafilt(im2bw(imadjust(firstImage),level),[100,1000]);
                 % This is the trace program, goes east to begin searching for 
                 % adjacent pixels and continues counterclockwise. Inf tells the
                 % function to for an unlimited amount of pixels until it 
@@ -177,25 +178,27 @@ classdef Experiment < handle
                 obj.groupNo = '?';
             end
         end
-        function AddObjects(obj)
+        
+        function ShowTraces(obj)
+            boundaries = bwboundaries(obj.mask);
+            hiContrastImg = imadjust(obj.images{1});
+            imshow(hiContrastImg)
+            hold on
+            for k = 1:length(boundaries)
+                cellNo = boundaries{k};
+                % Plot all traced cells
+                plot(cellNo(:,2),cellNo(:,1),'g','LineWidth',1.5);
+            end
+        end
+        
+        function AddTraces(obj)
+            obj.ShowTraces
             oldMask = obj.mask;
-            newMask = zeros(size(firstImage));
+            newMask = oldMask;
             boundaries = bwboundaries(oldMask);
             
-            [l,w] = size(oldMask);
-            for z = 1:length(boundaries)
-                % Store all pixel x coordinates
-                bx = boundaries{z}(:,2);
-                % Store all pixel y coordinates
-                by = boundaries{z}(:,1);
-                % Convert traced shape into a mask
-                bw3 = poly2mask(bx,by,l,w);
-                % Add current mask into a total mask
-                newMask = newMask + bw3;
-            end
-            
-            hiContrastImg = 
-            imshow(hiContrastImg)
+            hiContrastImg = imadjust(obj.images{1});
+            hHCI = imshow(hiContrastImg);
             hold on
             for k = 1:length(boundaries)
                 cellNo = boundaries{k};
@@ -204,19 +207,90 @@ classdef Experiment < handle
             end
             % Allow the user to circle additional cells if required
             DrawROIcheck = ...
-                questdlg('Would you like to circle another cell?', ...
+                questdlg('Would you like to circle a cell?', ...
                 'Checking...','Yes','No','Yes');
-            cnt = 1;
-            while strcmp(DrawROIcheck,'Yes') == 1
+            if strcmp(DrawROIcheck,'Yes')
                 h = imfreehand;
-                bw = createMask(h);
-                DrawROIcheck = ...
-                    questdlg('Would you like to circle another cell?',...
-                    'Checking...','Yes','No','Yes');
+                bw = createMask(h,hHCI);
                 newMask = newMask + bw;
-                cnt = cnt + 1;
+            else
+                newMask = oldMask;
             end
             obj.mask = newMask;
+            
+            imshow(hiContrastImg)
+            hold on
+            boundaries = bwboundaries(newMask);
+            for k = 1:length(boundaries)
+                cellNo = boundaries{k};
+                % Plot all traced cells
+                plot(cellNo(:,2),cellNo(:,1),'g','LineWidth',1.5);
+            end
+        end
+        
+        function DeleteTraces(obj)
+            oldMask = obj.mask;
+            newMask = zeros(size(oldMask));
+            boundaries = bwboundaries(oldMask);
+
+            hiContrastImg = imadjust(obj.images{1});
+            imshow(hiContrastImg)
+            hold on
+            for k = 1:length(boundaries)
+                cellNo = boundaries{k};
+                % Plot all traced cells
+                plot(cellNo(:,2),cellNo(:,1),'g','LineWidth',1.5);
+            end
+
+            % Allow the user to delete cell traces if required
+            DrawROIcheck = ...
+                questdlg('Would you like to delete a cell''s trace?', ...
+                'Checking...','Yes','No','Yes');
+            if strcmp(DrawROIcheck,'Yes')
+                hPoint = impoint;
+
+                pointInd = hPoint.getPosition;
+                [l,w] = size(oldMask);
+                breakFlag = 0;
+                for q = 1:length(boundaries)
+                    bx = boundaries{q}(:,2);
+                    by = boundaries{q}(:,1);
+                    bMask = poly2mask(bx,by,l,w);
+                    [bRow,bCol] = find(bMask);
+                    bPixels = [bCol,bRow];
+                    for r = 1:size(bPixels,1)
+                        if isequal(pointInd,bPixels(r,:))
+                            boundaries(q) = [];
+                            breakFlag = 1;
+                            break
+                        end
+                    end
+                    if breakFlag == 1
+                        break
+                    end
+                end
+                for z = 1:length(boundaries)
+                    % Store all pixel x coordinates
+                    bx = boundaries{z}(:,2);
+                    % Store all pixel y coordinates
+                    by = boundaries{z}(:,1);
+                    % Convert traced shape into a mask
+                    bw3 = poly2mask(bx,by,l,w);
+                    % Add current mask into a total mask
+                    newMask = newMask + bw3;
+                end
+                obj.mask = newMask;
+            else
+                obj.mask = oldMask;
+            end
+            
+            imshow(hiContrastImg)
+            hold on
+            for k = 1:length(boundaries)
+                cellNo = boundaries{k};
+                % Plot all traced cells
+                plot(cellNo(:,2),cellNo(:,1),'g','LineWidth',1.5);
+            end
         end
     end
 end
